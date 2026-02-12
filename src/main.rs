@@ -28,7 +28,7 @@ impl GameState {
         let letter = letter.to_ascii_lowercase();
         
         if self.guesses.contains(&letter) {
-            return Err("You already guessed that...");
+            return Err("You already guessed that incorrectly...");
         }
 
         let is_correct = self.target_lowercase().contains(letter);
@@ -46,11 +46,15 @@ impl GameState {
         /* First, show the man */
         self.show_man();
 
-        /* Second, show all their guessed letters */
+        /* Second, show all their incorrectly guessed letters */
         self.guesses.sort();
 
         let formatted_guesses: String = self.guesses.iter().map(|c: &char| {
-            format!("{} ", c)
+            if !self.target_lowercase().contains(c.clone()) {
+                format!("{} ", c)
+            } else {
+                String::from("")
+            }
         }).collect();
         
         println!("{}", formatted_guesses);
