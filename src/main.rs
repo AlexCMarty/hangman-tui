@@ -91,10 +91,12 @@ impl GameState {
             }
         }).collect();
         
+        println!("{}\n{} attempts remaining\n", word, self.attempts_remaining - 1);
+
+        /* Fourth, return status */
         if self.attempts_remaining == 1 {
             Progress::End
         } else if word.contains('_') {
-            println!("{}\n{} attempts remaining\n", word, self.attempts_remaining - 1);
             Progress::Continue
         } else {
             Progress::End
@@ -154,6 +156,5 @@ fn main() {
         }
     }
     
-    hangman.show_man();
     println!("Game over!")
 }
