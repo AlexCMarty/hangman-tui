@@ -13,17 +13,36 @@ enum Progress {
     End
 }
 
-// Logic
+impl std::fmt::Display for Progress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            &Progress::Continue => write!(f, "Continue"),
+            &Progress::End => write!(f, "End")
+        }
+    }
+}
+
 impl GameState {
     fn new(target: &str) -> Self {
-        GameState { target: target.to_string(), guesses: Vec::new(), attempts_remaining: 8, }
+        GameState { 
+            target: target.to_string(), 
+            guesses: Vec::new(),
+            attempts_remaining: hangman_terminal::STATES.len() as u8
+        }
     }
 
     fn target_lowercase(&self) -> String {
         self.target.to_ascii_lowercase()
     }
 
-    // will only ever push lowercase letters to self.guesses
+    fn show_man(&self) {
+        let index_to_show = hangman_terminal::STATES.len() - self.attempts_remaining as usize;
+        match hangman_terminal::STATES.get(index_to_show) {
+            Some(man) => println!("{}", man),
+            None => println!("{}", hangman_terminal::STATES.last().unwrap())
+        }
+    }
+
     fn guess(&mut self, letter: char) -> Result<bool, &str> {
         let letter = letter.to_ascii_lowercase();
         
@@ -39,17 +58,21 @@ impl GameState {
         self.guesses.push(letter);
 
         return Ok(is_correct);
-        
     }
-
-    fn show(&mut self) -> Progress {
+    
+    /// Prints the man, then 
+    /// the incorrect guesses, then
+    /// the progress on the word, then
+    /// the number of attempts remaining
+    
+    fn render(&mut self) -> Progress {
         /* First, show the man */
         self.show_man();
 
         /* Second, show all their incorrectly guessed letters */
         self.guesses.sort();
 
-        let formatted_guesses: String = self.guesses.iter().map(|c: &char| {
+        let incorrect_guesses: String = self.guesses.iter().map(|c: &char| {
             if !self.target_lowercase().contains(c.clone()) {
                 format!("{} ", c)
             } else {
@@ -57,28 +80,25 @@ impl GameState {
             }
         }).collect();
         
-        println!("{}", formatted_guesses);
+        println!("{incorrect_guesses}");
 
-        /* Third, remark attempts remaining, or end. */
+        /* Third, format the word and show attempts remaining */
         let word: String = self.target_lowercase().chars().map(|c: char| {
-            if self.guesses.contains(&c) {
+            if (self.guesses.contains(&c)) || (c == ' ') {
                 format!("{c} ")
             } else {
                 String::from("_ ")
             }
         }).collect();
         
-        if word.contains('_') {
-            println!("{}\n{} attempts remaining\n", word, self.attempts_remaining);
+        if self.attempts_remaining == 1 {
+            Progress::End
+        } else if word.contains('_') {
+            println!("{}\n{} attempts remaining\n", word, self.attempts_remaining - 1);
             Progress::Continue
         } else {
             Progress::End
         }
-    }
-
-    fn show_man(&self) {
-        let index_to_show = hangman_terminal::STATES.len() - self.attempts_remaining as usize;
-        println!("{}", hangman_terminal::STATES[index_to_show]);
     }
 }
 
@@ -114,7 +134,7 @@ fn main() {
     
     clear_terminal();
     loop {
-        let state = hangman.show();
+        let state = hangman.render();
         if let Progress::End = state {
             break
         }
@@ -125,7 +145,7 @@ fn main() {
         if answer.len() != 1 {
             println!("Please enter just a single letter")
         } else {
-            let result = hangman.guess(answer.chars().nth(0).unwrap().to_ascii_lowercase());
+            let result = hangman.guess(answer.chars().nth(0).unwrap());
             match result {
                 Ok(true) => println!("Correct guess!"),
                 Ok(false) => println!("Incorrect guess :("),
@@ -133,7 +153,7 @@ fn main() {
             }
         }
     }
-
+    
     hangman.show_man();
     println!("Game over!")
 }
