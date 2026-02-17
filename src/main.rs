@@ -47,7 +47,11 @@ impl GameState {
         let letter = letter.to_ascii_lowercase();
         
         if self.guesses.contains(&letter) {
-            return Err("You already guessed that incorrectly...");
+            if self.target.contains(letter){
+                return Err("You already guessed that ...");
+            } else {
+                return Err("You already guessed that incorrectly...");
+            }
         }
 
         let is_correct = self.target_lowercase().contains(letter);
@@ -155,6 +159,6 @@ fn main() {
             }
         }
     }
-    
+
     println!("Game over!")
 }
