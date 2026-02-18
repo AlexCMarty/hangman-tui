@@ -133,7 +133,7 @@ fn clear_terminal() {
 }
 
 fn main() {
-    println!("Welcome to Rust Hangman 1.0.0!");
+    println!("Welcome to Rust Hangman 0.5.0!");
     let target = ascii_input("Please enter a phrase for the other player to guess.");
 
     let mut hangman = GameState::new(&target);
