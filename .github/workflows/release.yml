@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package AppImage
+        run: |
+          sudo apt-get install -y libfuse2 imagemagick
+
+          mkdir -p AppDir/usr/bin
+          cp target/release/hangman AppDir/usr/bin/hangman
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/sh
+          exec "$APPDIR/usr/bin/hangman" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          cat > AppDir/hangman.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Hangman
+          Exec=hangman
+          Icon=hangman
+          Type=Application
+          Categories=Game;
+          Terminal=true
+          EOF
+
+          convert -size 256x256 xc:#1a1a2e AppDir/hangman.png
+
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir hangman-x86_64.AppImage
+
+      - name: Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hangman-x86_64.AppImage
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/release/hangman.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: tar -czf hangman-macos.tar.gz -C target/release hangman
+
+      - name: Upload
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hangman-macos.tar.gz
