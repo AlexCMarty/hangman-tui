@@ -167,7 +167,7 @@ fn play() {
 }
 
 fn main() {
-    println!("Welcome to Rust Hangman 0.6.1!");
+    println!("Welcome to Hangman in Rust! 🦀");
     
     loop {
         play();
