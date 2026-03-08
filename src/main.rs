@@ -129,7 +129,11 @@ fn ascii_input(prompt: &str) -> String{
 }
 
 fn clear_terminal() {
-    execute!(io::stdout(), Clear(ClearType::All)).unwrap();
+    execute!(
+        io::stdout(), 
+        Clear(ClearType::All), 
+        crossterm::cursor::MoveTo(0, 0)
+    ).unwrap();
 }
 
 fn play() {
@@ -163,7 +167,7 @@ fn play() {
 }
 
 fn main() {
-    println!("Welcome to Rust Hangman 0.6.0!");
+    println!("Welcome to Rust Hangman 0.6.1!");
     
     loop {
         play();
