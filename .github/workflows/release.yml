@@ -25,6 +25,7 @@ jobs:
 
           cat > AppDir/AppRun << 'EOF'
           #!/bin/sh
+          export QT_LOGGING_RULES="qt.qpa.*=false"
           exec "$APPDIR/usr/bin/hangman" "$@"
           EOF
           chmod +x AppDir/AppRun
