@@ -132,8 +132,7 @@ fn clear_terminal() {
     execute!(io::stdout(), Clear(ClearType::All)).unwrap();
 }
 
-fn main() {
-    println!("Welcome to Rust Hangman 0.5.0!");
+fn play() {
     let target = ascii_input("Please enter a phrase for the other player to guess.");
 
     let mut hangman = GameState::new(&target);
@@ -161,4 +160,24 @@ fn main() {
     }
 
     println!("Game over!")
+}
+
+fn main() {
+    println!("Welcome to Rust Hangman 0.6.0!");
+    
+    loop {
+        play();
+        let encore: bool = loop {
+            let response = ascii_input("Do you want to play again?");
+            match response.as_str() {
+                "y" | "Y" | "yes" | "Yes" => break true,
+                "n" | "N" | "no" | "No" => break false,
+                _ => println!("🤦\nPlease enter y/n")
+            }
+        };
+
+        if !encore {
+            break;
+        }
+    }
 }
